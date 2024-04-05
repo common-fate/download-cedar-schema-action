@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
-import { wait } from './wait'
+import { createClient } from './client'
+import { writeFileSync } from 'fs'
 
 /**
  * The main function for the action.
@@ -7,18 +8,26 @@ import { wait } from './wait'
  */
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
+    const outputFile = core.getInput('save-schema-file-to')
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    const client = await createClient({
+      apiUrl: core.getInput('deployment-url'),
+      oidcClientId: core.getInput('oidc-client-id'),
+      oidcClientSecret: core.getInput('oidc-client-secret'),
+      oidcIssuer: core.getInput('oidc-issuer')
+    })
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const result = await client.getSchemaJSONString({})
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
+    const schemaString = JSON.stringify(
+      result.schema,
+      null,
+      core.getInput('schema-json-indentation')
+    )
+
+    core.info(`Writing Cedar schema to ${outputFile}`)
+
+    writeFileSync(outputFile, schemaString)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)

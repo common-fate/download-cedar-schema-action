@@ -1,23 +1,37 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Download Cedar Schema'
+description: 'Download the Cedar Schema for a Common Fate deployment.'
+author: 'Common Fate'
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: 'heart'
-  color: 'red'
+  icon: download
+  color: gray-dark
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  oidc-issuer:
+    description:
+      'The OIDC issuer to use for authenticating to your Common Fate deployment'
     required: true
-    default: '1000'
-
-# Define your outputs here.
-outputs:
-  time:
-    description: 'Your output description here'
+  oidc-client-id:
+    description:
+      'The OIDC client ID to use for authenticating to your Common Fate
+      deployment'
+    required: true
+  oidc-client-secret:
+    description:
+      'The OIDC client secret to use for authenticating to your Common Fate
+      deployment'
+    required: true
+  deployment-url:
+    description: 'Your Common Fate deployment URL.'
+    required: true
+  save-schema-file-to:
+    description: 'The output file location to save the schema to.'
+    required: true
+    default: './commonfate.cedarschema.json'
+  schema-json-indentation:
+    description: 'Indentation to use when converting schema to JSON'
+    required: true
+    default: '  '
 
 runs:
   using: node20

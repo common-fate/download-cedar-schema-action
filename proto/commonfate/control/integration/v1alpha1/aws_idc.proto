@@ -1,0 +1,12 @@
+syntax = "proto3";
+package commonfate.control.integration.v1alpha1;
+
+
+message AWSIDC {
+    string sso_instance_arn = 1;
+    string identity_store_id = 2;
+    string sso_region = 3;
+    string reader_role_arn = 4;
+    string audit_role_name = 5;
+    repeated string resource_regions = 6;
+}

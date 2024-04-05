@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package commonfate.entity.v1alpha1;
+
+import "commonfate/entity/v1alpha1/eid.proto";
+
+message Attribute {
+    string key = 1;
+    Value value = 2;
+}
+
+message Value {
+    oneof value {
+        string str = 1;
+        bool bool = 2;
+        int64 long = 3;
+        EID entity = 4;
+        Record record = 5;
+        Set set = 6;
+    }
+}
+
+message Record {
+    repeated Attribute attributes = 1;
+}
+
+message Set {
+    repeated Value values = 1;
+}
+
+
+message Entity {
+    EID eid = 1;
+    repeated Attribute attributes = 2;
+}

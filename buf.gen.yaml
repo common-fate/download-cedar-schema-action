@@ -1,0 +1,9 @@
+version: v1
+plugins:
+  # This will invoke protoc-gen-es and write output to src/gen
+  - plugin: es
+    out: src/gen
+    opt: target=ts
+  - plugin: connect-es
+    out: src/gen
+    opt: target=ts,import_extension=none

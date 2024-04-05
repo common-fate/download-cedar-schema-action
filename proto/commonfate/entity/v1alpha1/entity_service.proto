@@ -1,0 +1,147 @@
+syntax = "proto3";
+
+package commonfate.entity.v1alpha1;
+
+import "commonfate/entity/v1alpha1/eid.proto";
+import "commonfate/entity/v1alpha1/entity.proto";
+import "commonfate/entity/v1alpha1/child_relation.proto";
+
+service EntityService {
+    // creates or updates entities for a particular policy store in the authorization service.
+    rpc BatchUpdate(BatchUpdateRequest) returns (BatchUpdateResponse) {}
+
+    // List entities matching filter conditions.
+    rpc List(ListRequest) returns (ListResponse) {}
+
+    // Get an entity by EID.
+    rpc Get(GetRequest) returns (GetResponse) {}
+
+    // List the children for a particular entity.
+    rpc ListChildren(ListChildrenRequest) returns (ListChildrenResponse) {}
+
+    // List the parents for a particular entity.
+    rpc ListParents(ListParentsRequest) returns (ListParentsResponse) {}
+
+    // Get multiple entities by EID.
+    rpc BatchGet(BatchGetRequest) returns (BatchGetResponse) {}
+
+    
+    rpc Select(SelectRequest) returns (SelectResponse) {}
+}
+
+message SelectRequest {
+    string universe = 1;
+
+    // The topmost parent entity to perform the selection on.
+    // The entity service will load the descendents of this entity to 
+    // load all of the 'resource_type' resources belonging to this entity.
+    EID belonging_to = 2;
+
+    string resource_type = 3;
+
+    // A Cedar expression to match entities for.
+    string when = 4;
+}
+
+message SelectResponse {
+    repeated Entity entities = 1;
+}
+
+message ListRequest {
+    string universe = 1;
+
+    // The token for the next page.
+    string page_token = 2;
+
+    // Filter entities for a particular type
+    string type = 3;
+
+    // If true, will include archived entities in the query
+    bool include_archived = 6;
+
+    optional Order order = 7;
+
+}
+enum Order {
+    ORDER_UNSPECIFIED = 0;    
+    ORDER_ASCENDING = 1;
+    ORDER_DESCENDING = 2;
+}
+
+
+message ListResponse {
+    repeated Entity entities = 1;
+    string next_page_token = 2;
+}
+
+message ListChildrenRequest {
+    string universe = 1;
+
+    // The token for the next page.
+    string page_token = 2;
+
+    EID parent = 3;
+}
+
+message ListChildrenResponse {
+    repeated EID children = 1;
+    string next_page_token = 2;
+}
+
+
+message ListParentsRequest {
+    string universe = 1;
+
+    // The token for the next page.
+    string page_token = 2;
+
+    EID child = 3;
+}
+
+message ListParentsResponse {
+    repeated EID parents = 1;
+    string next_page_token = 2;
+}
+
+
+message GetRequest {
+    string universe = 1;
+    EID eid = 2;
+}
+
+message GetResponse {
+    Entity entity = 1;
+}
+
+message BatchGetRequest {
+    string universe = 1;
+    repeated EID eids = 2;
+}
+
+message BatchGetResponse {
+    repeated Entity entities = 1;
+}
+
+
+message BatchUpdateRequest {
+    string universe = 1;
+
+    repeated Entity put = 2;
+    
+    // parent/child relationships to add.
+    repeated ChildRelation put_children = 3;
+
+    // entities to archive
+    repeated EID archive = 4;
+
+    // entities to mark as active
+    repeated EID unarchive = 5;
+
+    // entities to delete
+    repeated EID delete = 6;
+
+    // parent/child relations to delete.
+    repeated ChildRelation delete_children = 7;
+}
+
+message BatchUpdateResponse {}

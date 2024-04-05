@@ -1,0 +1,53 @@
+syntax = "proto3";
+package commonfate.control.integration.reset.v1alpha1;
+
+import "commonfate/entity/v1alpha1/eid.proto";
+
+service ResetService {
+  rpc ResetEntraUsers(ResetEntraUsersRequest) returns (ResetEntraUsersResponse) {}
+
+  rpc RelinkEntraUsers(RelinkEntraUsersRequest) returns (RelinkEntraUsersResponse) {}
+
+  // Removes an OAuth2.0 token from an installed integration from Common Fate.
+  rpc RemoveOAuthToken(RemoveOAuthTokenRequest) returns (RemoveOAuthTokenResponse) {}
+
+  // Cancels all current background tasks for a given kind.
+  rpc CancelBackgroundJob(CancelBackgroundJobRequest) returns (CancelBackgroundJobResponse) {}
+
+  // retries the given job ID is it is in the retryable state.
+  rpc RetryBackgroundJob(RetryBackgroundJobRequest) returns (RetryBackgroundJobResponse) {}
+}
+
+message ResetEntraUsersRequest {
+  // If true, will return a preview of changes rather than actually resetting them.
+  bool dry_run = 1;
+}
+
+message ResetEntraUsersResponse {
+  repeated commonfate.entity.v1alpha1.EID deleted_entities = 1;
+}
+
+message RelinkEntraUsersRequest {}
+
+message RelinkEntraUsersResponse {}
+
+message RemoveOAuthTokenRequest {
+  // The ID of the token to remove.
+  string id = 1;
+}
+
+message RemoveOAuthTokenResponse {}
+
+message CancelBackgroundJobRequest {
+  // The job id to cancel
+  int64 id = 1;
+}
+
+message CancelBackgroundJobResponse {}
+
+message RetryBackgroundJobRequest {
+  // The job id to retry
+  int64 id = 1;
+}
+
+message RetryBackgroundJobResponse {}

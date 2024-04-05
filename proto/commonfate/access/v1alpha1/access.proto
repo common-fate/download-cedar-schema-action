@@ -1,0 +1,230 @@
+syntax = "proto3";
+
+package commonfate.access.v1alpha1;
+
+import "commonfate/access/v1alpha1/access_request.proto";
+import "commonfate/access/v1alpha1/diagnostic.proto";
+import "commonfate/access/v1alpha1/grant.proto";
+import "commonfate/access/v1alpha1/named_eid.proto";
+import "commonfate/access/v1alpha1/user.proto";
+import "commonfate/authz/v1alpha1/read_only.proto";
+import "commonfate/control/attest/v1alpha1/attestation.proto";
+import "commonfate/entity/v1alpha1/eid.proto";
+import "commonfate/entity/v1alpha1/entity.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+// AccessService is the Access Handler's user-facing API.
+// Users call this API to ensure that they have access to entitlements.
+service AccessService {
+  // BatchEnsure is a high-level declarative API which can be called to ensure access has been provisioned to multiple entitlements.
+  //
+  // The method checks whether the entitlement has been provisioned to the user.
+  // If the entitlement has not been provisioned, an Access Request will be created for the entitlement.
+  // If a pending Access Request exists for the entitlement, this request is returned.
+  //
+  // In future, this method may trigger an extension to any Access Requests which are due to expire.
+  rpc BatchEnsure(BatchEnsureRequest) returns (BatchEnsureResponse) {}
+
+  // Query for JIT availabilities.
+  rpc QueryAvailabilities(QueryAvailabilitiesRequest) returns (QueryAvailabilitiesResponse) {
+    option (commonfate.authz.v1alpha1.read_only) = true;
+  }
+
+  rpc QueryEntitlements(QueryEntitlementsRequest) returns (QueryEntitlementsResponse) {
+    option (commonfate.authz.v1alpha1.read_only) = true;
+  }
+
+  rpc QueryApprovers(QueryApproversRequest) returns (QueryApproversResponse) {
+    option (commonfate.authz.v1alpha1.read_only) = true;
+  }
+
+  rpc PreviewUserAccess(PreviewUserAccessRequest) returns (PreviewUserAccessResponse) {
+    option (commonfate.authz.v1alpha1.read_only) = true;
+  }
+
+  rpc PreviewEntitlementAccess(PreviewEntitlementAccessRequest) returns (PreviewEntitlementAccessResponse) {
+    option (commonfate.authz.v1alpha1.read_only) = true;
+  }
+}
+
+message QueryApproversRequest {
+  oneof query {
+    TargetRole target_role = 1;
+    commonfate.entity.v1alpha1.EID grant = 2;
+  }
+}
+
+message TargetRole {
+  Specifier target = 1;
+  Specifier role = 2;
+}
+
+message QueryApproversResponse {
+  repeated User approvers = 1;
+}
+
+message QueryAvailabilitiesRequest {
+  // The token for the next page.
+  string page_token = 10;
+}
+
+message QueryAvailabilitiesResponse {
+  repeated Availability availabilities = 1;
+  string next_page_token = 2;
+}
+
+message QueryEntitlementsRequest {
+  optional string target_type = 1;
+  // The token for the next page.
+  string page_token = 10;
+}
+
+message QueryEntitlementsResponse {
+  repeated Entitlement entitlements = 1;
+  string next_page_token = 2;
+}
+
+message PreviewUserAccessRequest {
+  Specifier principal = 1;
+  optional string target_type = 2;
+}
+
+message PreviewUserAccessResponse {
+  repeated Entitlement entitlements = 1;
+}
+
+message PreviewEntitlementAccessRequest {
+  Specifier target = 1;
+  Specifier role = 2;
+}
+
+message PreviewEntitlementAccessResponse {
+  // The principals which have access to request access and whether that access will be auto approved
+  repeated PrincipalAccess access = 1;
+}
+
+message PrincipalAccess {
+  User principal = 1;
+  // Whether or not it is auto approved
+  bool auto_approved = 2;
+}
+
+message Entitlement {
+  // The particular resource which this entitlement gives access to
+  NamedEID target = 1;
+
+  // The particular role this entitlement gives access to
+  NamedEID role = 2;
+
+  // Whether or not it is auto approved
+  bool auto_approved = 3;
+}
+
+message Availability {
+  // ID is just used internally and isn't really shown to users except for debugging purposes.
+  // users refer to entitlements by the target and role, rather than the internal ID.
+  string id = 1;
+
+  // The particular resource which this entitlement gives access to
+  NamedEID target = 2;
+
+  // The particular role this entitlement gives access to
+  NamedEID role = 3;
+
+  // the JIT workflow associated with the entitlement.
+  string workflow_id = 4;
+
+  // The permitted access duration.
+  google.protobuf.Duration duration = 5;
+
+  uint32 priority = 6;
+
+  commonfate.entity.v1alpha1.EID reviewers = 7;
+
+  // the ID of the selector which was used to match the targets
+  commonfate.entity.v1alpha1.EID target_selector = 8;
+}
+
+message Specifier {
+  oneof specify {
+    // Specify a resource using a EID. If you're using Common Fate programatically
+    // and you know the resource you want to specify, you should use this field.
+    commonfate.entity.v1alpha1.EID eid = 1;
+
+    // Specify a resource using a string lookup. This is used in our CLI
+    // to allow end users to look up resources by name, ID and/or EID.
+    //
+    // The order of matching is:
+    // 1. the 'lookup' field will be parsed as a EID - if it's valid it will be a EID lookup
+    // 2. the 'lookup' field will be matched against all resource IDs
+    // 3. the 'lookup' field will be matched against all resource names.
+    //
+    // If the lookup is a valid EID but it is not found, the API will return a Not Found error.
+    // The API will return an Invalid Arguments error if the lookup is ambiguous and could match
+    // multiple resources.
+    string lookup = 2;
+  }
+}
+
+message EntitlementInput {
+  // The principal to grant access to.
+  // If empty, the current caller will be used as the principal.
+  Specifier principal = 1;
+
+  // The resource to grant the principal access to.
+  Specifier target = 2;
+
+  // The role to grant the principal access to the resource with.
+  Specifier role = 3;
+
+  optional google.protobuf.Duration duration = 4;
+}
+
+message BatchEnsureRequest {
+  // The entitlements to request access to.
+  repeated EntitlementInput entitlements = 1;
+
+  // Optional justification as to why access is required.
+  Justification justification = 2;
+
+  // If true, will return a preview of changes rather than actually provisioning access.
+  bool dry_run = 3;
+}
+
+message BatchEnsureResponse {
+  // An ID which can be used to debug the evaluation of the access policies
+  // associated with the request.
+  string trace_id = 1;
+
+  repeated GrantState grants = 2;
+
+  // User-facing diagnostic warnings, for messages such as the user not having permissions
+  // to request some of the entitlements they asked for.
+  //
+  // Rather than failing the entire operation the Access Handler returns warnings.
+  repeated Diagnostic diagnostics = 6;
+}
+
+message GrantState {
+  Grant grant = 1;
+  // The change to the grant.
+  // Will be unspecified if the grant has not been changed.
+  GrantChange change = 2;
+}
+
+enum GrantChange {
+  GRANT_CHANGE_UNSPECIFIED = 0;
+
+  // The Grant has been newly requested
+  GRANT_CHANGE_REQUESTED = 1;
+
+  // The Grant has been activated
+  GRANT_CHANGE_ACTIVATED = 2;
+
+  // The Grant has been extended
+  GRANT_CHANGE_EXTENDED = 3;
+
+  // The provisioning process failed for the Grant
+  GRANT_CHANGE_PROVISIONING_FAILED = 4;
+}

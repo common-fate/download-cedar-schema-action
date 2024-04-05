@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package commonfate.authz.v1alpha1;
+
+import "commonfate/entity/v1alpha1/eid.proto";
+import "commonfate/entity/v1alpha1/entity.proto";
+import "commonfate/entity/v1alpha1/child_relation.proto";
+
+message Request {
+    commonfate.entity.v1alpha1.EID principal = 1;
+    commonfate.entity.v1alpha1.EID action = 2;
+    commonfate.entity.v1alpha1.EID resource = 3;
+    // A client side identifier for the authorization request.
+    // The client_key will be included in the corresponding evaluation for the
+    // particular request made.
+    // 
+    // Useful when calling BatchAuthorize to match the evaluations with the requests.
+    string client_key = 4;
+
+    // Entities to 'overlay' temporarily on the entities stored in the authz service.
+    repeated commonfate.entity.v1alpha1.Entity overlay_entities = 5;
+
+    // Parent/child relationships to 'overlay' temporarily on the entities stored in the authz service.
+    repeated commonfate.entity.v1alpha1.ChildRelation overlay_children = 6;
+
+    // Tags associated with the authorization evaluation.
+    // Common Fate uses this to add attributes like the Access Request ID
+    // to the evaluation.
+    //
+    // Tags are *not* used to make authorization decisions but rather is used to aid in observability
+    // and debugging of authorization decisions.
+    repeated Tag tags = 8;
+}
+
+message Tag {
+    string key = 1;
+    string value = 2;
+}
+

@@ -1,0 +1,59 @@
+syntax = "proto3";
+package commonfate.control.config.v1alpha1;
+
+import "google/protobuf/duration.proto";
+import "commonfate/entity/v1alpha1/eid.proto";
+import "commonfate/authz/v1alpha1/read_only.proto";
+
+service AvailabilitySpecService {
+    rpc CreateAvailabilitySpec(CreateAvailabilitySpecRequest) returns (CreateAvailabilitySpecResponse) {}
+    rpc GetAvailabilitySpec(GetAvailabilitySpecRequest) returns (GetAvailabilitySpecResponse) {
+        option(commonfate.authz.v1alpha1.read_only) = true;
+    }
+    rpc UpdateAvailabilitySpec(UpdateAvailabilitySpecRequest) returns (UpdateAvailabilitySpecResponse) {}
+    rpc DeleteAvailabilitySpec(DeleteAvailabilitySpecRequest) returns (DeleteAvailabilitySpecResponse) {}
+}
+
+
+message AvailabilitySpec {
+    string id = 1;
+    string workflow_id = 2;
+    commonfate.entity.v1alpha1.EID role = 3;
+    commonfate.entity.v1alpha1.EID target = 4;
+    commonfate.entity.v1alpha1.EID identity_domain = 6;
+}
+
+message CreateAvailabilitySpecRequest {
+    string workflow_id = 1;
+    commonfate.entity.v1alpha1.EID role = 2;
+    commonfate.entity.v1alpha1.EID target = 3;
+    commonfate.entity.v1alpha1.EID identity_domain = 4;
+}
+
+message CreateAvailabilitySpecResponse {
+    AvailabilitySpec availability_spec = 1;
+}
+
+message GetAvailabilitySpecRequest {
+    string id = 1;
+}
+
+message GetAvailabilitySpecResponse {
+    AvailabilitySpec availability_spec = 1;
+}
+
+message UpdateAvailabilitySpecRequest {
+    AvailabilitySpec availability_spec = 1;
+}
+
+message UpdateAvailabilitySpecResponse {
+    AvailabilitySpec availability_spec = 1;
+}
+
+message DeleteAvailabilitySpecRequest {
+    string id = 1;
+}
+
+message DeleteAvailabilitySpecResponse {
+    string id = 1;
+}

@@ -1,0 +1,60 @@
+syntax = "proto3";
+package commonfate.control.config.v1alpha1;
+
+import "google/protobuf/duration.proto";
+import "commonfate/entity/v1alpha1/eid.proto";
+import "commonfate/authz/v1alpha1/read_only.proto";
+
+
+
+service AccessWorkflowService {
+    rpc CreateAccessWorkflow(CreateAccessWorkflowRequest) returns (CreateAccessWorkflowResponse) {}
+    rpc GetAccessWorkflow(GetAccessWorkflowRequest) returns (GetAccessWorkflowResponse) {
+        option(commonfate.authz.v1alpha1.read_only) = true;
+    }
+    rpc UpdateAccessWorkflow(UpdateAccessWorkflowRequest) returns (UpdateAccessWorkflowResponse) {}
+    rpc DeleteAccessWorkflow(DeleteAccessWorkflowRequest) returns (DeleteAccessWorkflowResponse) {}
+}
+
+message AccessWorkflow {
+    string id = 1;
+    string name = 2; 
+    google.protobuf.Duration access_duration = 3;
+    google.protobuf.Duration try_extend_after = 4;
+    int32 priority = 5;
+}
+
+message CreateAccessWorkflowRequest {
+    string name = 2; 
+    google.protobuf.Duration access_duration = 3;
+    google.protobuf.Duration try_extend_after = 4;
+    int32 priority = 5;
+}
+
+message CreateAccessWorkflowResponse {
+    AccessWorkflow workflow = 1;
+}
+
+message GetAccessWorkflowRequest {
+    string id = 1;
+}
+
+message GetAccessWorkflowResponse {
+    AccessWorkflow workflow = 1;
+}
+
+message UpdateAccessWorkflowRequest {
+    AccessWorkflow workflow = 1;
+}
+
+message UpdateAccessWorkflowResponse {
+    AccessWorkflow workflow = 1;
+}
+
+message DeleteAccessWorkflowRequest {
+    string id = 1;
+}
+
+message DeleteAccessWorkflowResponse {
+    string id = 1;
+}

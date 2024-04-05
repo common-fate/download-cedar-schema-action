@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package commonfate.authz.v1alpha1;
+
+import "google/protobuf/timestamp.proto";
+
+import "commonfate/authz/v1alpha1/request.proto";
+import "commonfate/authz/v1alpha1/policy.proto";
+import "commonfate/entity/v1alpha1/entity.proto";
+import "google/protobuf/duration.proto";
+
+enum Decision {
+    DECISION_UNSPECIFIED = 0;
+  
+    // Access is allowed.
+    DECISION_ALLOW = 2;
+  
+    // Access is denied.
+    DECISION_DENY = 4;
+}
+
+// DebugEvaluation contains additional information about a particular
+// authorization evaluation, allowing an administrator to debug the decision
+// and understand why the request was allowed or denied.
+message DebugEvaluation {
+    // version is used when serializing the DebugEvaluation message in order to ensure
+    // forwards-compatibility. Version should be set to '1' when storing DebugEvaluation messages in archival storage.
+    uint32 version = 1;
+    Evaluation evaluation = 2;
+    DebugInformation debug_information = 3;
+}
+
+message Evaluation {
+    string id = 1;
+    Request request = 2;
+    Decision decision = 3;
+    Diagnostics diagnostics = 4;
+    // The client-side identifier for the request specified in AuthorizationRequest.
+    string client_key = 5;
+    google.protobuf.Timestamp evaluated_at = 6;
+
+    // the duration that it took to make the authorization decision
+    google.protobuf.Duration evaluation_duration = 7;
+}
+
+message Diagnostics {
+    repeated string reason = 1;
+    repeated string errors = 2;
+    repeated Annotation annotations = 3;
+}
+
+message Annotation {
+    // the ID of the policy with the annotation
+    string policy_id = 1;
+    // the key of the annotation. e.g. in @advice("something")
+    // it is 'advice'.
+    string key = 2;
+    // the value of the annotation. e.g. in @advice("something")
+    // it is 'something'
+    string value = 3;
+}
+
+message DebugInformation {
+    // PolicySets which contributed to the authorization decision.
+    repeated PolicySet policy_sets = 1;
+
+    // Entities which contributed to the authorization decision.
+    repeated commonfate.entity.v1alpha1.Entity entities = 2;
+}

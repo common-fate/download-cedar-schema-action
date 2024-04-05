@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package commonfate.access.v1alpha1;
+
+import "commonfate/entity/v1alpha1/eid.proto";
+import "commonfate/access/v1alpha1/user.proto";
+import "commonfate/authz/v1alpha1/read_only.proto";
+
+service IdentityService {
+    rpc GetCallerIdentity(GetCallerIdentityRequest) returns (GetCallerIdentityResponse)  {
+      option(commonfate.authz.v1alpha1.read_only) = true;
+    }
+}
+
+
+message GetCallerIdentityRequest{}
+
+message GetCallerIdentityResponse {
+  // The chain of the identities for the user.
+  // The final item in the chain is the current identity the user is acting as,
+  // and is the 'principal' for authorization policy evaluations.
+  //
+  // For users authenticating with OIDC, the chain will usually look like:
+  // 1. OIDC::Subject::"https://oidc-issuer.example.com/93fcac4b-ab67-405c-926b-184f8ba697a4"
+  // 2. CF::User::"usr_2Z0WQkw9Ogpsn2Us6RuIBiDRYzJ"
+  repeated IdentityLink chain = 1;
+
+  // The principal that the user is currently acting as.
+  User principal = 2; 
+}
+
+message IdentityLink {
+  commonfate.entity.v1alpha1.EID id = 1;
+  string label = 2;
+}
