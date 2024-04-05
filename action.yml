@@ -28,10 +28,6 @@ inputs:
     description: 'The output file location to save the schema to.'
     required: true
     default: './commonfate.cedarschema.json'
-  schema-json-indentation:
-    description: 'Indentation to use when converting schema to JSON'
-    required: true
-    default: '  '
 
 runs:
   using: node20
