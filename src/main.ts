@@ -19,6 +19,8 @@ export async function run(): Promise<void> {
 
     const result = await client.getSchemaJSONString({})
 
+    core.debug(`retrieved schema: ${result.schema}`)
+
     const schemaString = JSON.stringify(
       result.schema,
       null,
