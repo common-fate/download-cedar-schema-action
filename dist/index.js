@@ -35270,6 +35270,7 @@ async function run() {
             oidcIssuer: core.getInput('oidc-issuer')
         });
         const result = await client.getSchemaJSONString({});
+        core.debug(`retrieved schema: ${result.schema}`);
         const schemaString = JSON.stringify(result.schema, null, core.getInput('schema-json-indentation'));
         core.info(`Writing Cedar schema to ${outputFile}`);
         (0, fs_1.writeFileSync)(outputFile, schemaString);
