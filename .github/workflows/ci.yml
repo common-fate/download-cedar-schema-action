@@ -57,8 +57,7 @@ jobs:
         id: test-action
         uses: ./
         with:
-          milliseconds: 2000
-
-      - name: Print Output
-        id: output
-        run: echo "${{ steps.test-action.outputs.time }}"
+          deployment-url: ${{ secrets.CF_API_URL }}
+          oidc-client-id: ${{ secrets.CF_OIDC_CLIENT_ID }}
+          oidc-client-secret: ${{ secrets.CF_OIDC_CLIENT_SECRET }}
+          oidc-issuer: ${{ secrets.CF_OIDC_ISSUER }}
